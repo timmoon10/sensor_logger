@@ -10,19 +10,42 @@ import board
 
 @functools.cache
 def sensor() -> adafruit_sht4x.SHT4x:
+    """SHT45 temperature and humidity sensor"""
     sht = adafruit_sht4x.SHT4x(board.I2C())
     sht.mode = adafruit_sht4x.Mode.NOHEAT_HIGHPRECISION
     return sht
 
 def celsius_to_fahrenheit(celsius: float) -> float:
+    """Convert Celsius scale to Fahrenheit"""
     return celsius * 1.8 + 32.0
 
+def wait_until_tick(ticks_per_hour: int) -> None:
+    """Divide hour into equal intervals and wait until next interval"""
+    if ticks_per_hour < 1:
+        raise ValueError(
+            f"Requires at least one tick per hour (got ticks_per_hour={ticks_per_hour})"
+        )
+    interval = 3600 / ticks_per_hour
+    now = datetime.datetime.now()
+    last_hour = now.replace(minute=0, second=0, microsecond=0)
+    ticks_since_hour = int((now - last_hour).total_seconds() / interval)
+    next_tick = (
+        last_hour
+        + datetime.timedelta(seconds=(interval * (ticks_since_hour + 1)))
+    )
+    time.sleep((next_tick - now).total_seconds())
+
 def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments"""
     parser = argparse.ArgumentParser()
     parser.add_argument("out_file", nargs="?", type=str, default=None)
+    parser.add_argument(
+        "--frequency", default=720, type=int, help="Sensor measurements per hour",
+    )
     return parser.parse_args()
 
 def main() -> None:
+    """Main function"""
 
     # Parse command-line options
     args = parse_args()
@@ -38,17 +61,18 @@ def main() -> None:
     # Create output file with header if needed
     if not out_file.exists():
         with open(out_file, "w") as f:
-            writer = csv.writer(f)
-            writer.writerow(("Time", "Temperature (F)", "Humidity (%)"))
+            csv.writer(f).writerow(("Time", "Temperature (F)", "Humidity (%)"))
 
+    # Perform sensor measurements at regular intervals
     for _ in range(5):
         timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
         temperature, humidity = sensor().measurements
         temperature = celsius_to_fahrenheit(temperature)
         with open(out_file, "a") as f:
-            writer = csv.writer(f)
-            writer.writerow((timestamp, f"{temperature:.1f}", f"{humidity:.0f}"))
-        time.sleep(1)
+            csv.writer(f).writerow(
+                (timestamp, f"{temperature:.1f}", f"{humidity:.0f}")
+            )
+        wait_until_tick(args.frequency)
 
 if __name__ == "__main__":
     main()
