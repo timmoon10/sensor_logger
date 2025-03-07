@@ -33,7 +33,12 @@ def wait_until_tick(ticks_per_hour: int) -> None:
         last_hour
         + datetime.timedelta(seconds=(interval * (ticks_since_hour + 1)))
     )
-    time.sleep((next_tick - now).total_seconds())
+    sleep_time = (next_tick - now).total_seconds()
+    if sleep_time <= 0:
+        # Something weird is happening, sleep one tick and hope it
+        # goes away
+        sleep_time = interval
+    time.sleep(sleep_time)
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments"""
@@ -41,6 +46,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("out_file", nargs="?", type=str, default=None)
     parser.add_argument(
         "--frequency", default=720, type=int, help="Sensor measurements per hour",
+    )
+    parser.add_argument(
+        "--duration", default=1/120, type=float, help="Number of hours to run sensor",
+    )
+    parser.add_argument(
+        "--until-tomorrow", action="store_true", help="Run sensor for rest of day",
     )
     return parser.parse_args()
 
@@ -50,10 +61,23 @@ def main() -> None:
     # Parse command-line options
     args = parse_args()
 
+    # Script duration
+    end_time: datetime.datetime
+    if args.until_tomorrow:
+        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
+        end_time = datetime.datetime(
+            year=tomorrow.year,
+            month=tomorrow.month,
+            day=tomorrow.day,
+        )
+    else:
+        start_time = datetime.datetime.now()
+        end_time = start_time + datetime.timedelta(hours=args.duration)
+
     # Output file path
     out_file = args.out_file
     if out_file is None:
-        timestamp = datetime.datetime.now().strftime('%Y%m%d')
+        timestamp = datetime.date.today().isoformat()
         log_dir = pathlib.Path(__file__).resolve().parent / "logs"
         out_file = log_dir / f"{timestamp}.csv"
     out_file = pathlib.Path(out_file).resolve()
@@ -64,8 +88,11 @@ def main() -> None:
             csv.writer(f).writerow(("Time", "Temperature (F)", "Humidity (%)"))
 
     # Perform sensor measurements at regular intervals
-    for _ in range(5):
-        timestamp = datetime.datetime.now().replace(microsecond=0).isoformat()
+    while True:
+        now = datetime.datetime.now()
+        if now >= end_time:
+            break
+        timestamp = now.replace(microsecond=0).isoformat()
         temperature, humidity = sensor().measurements
         temperature = celsius_to_fahrenheit(temperature)
         with open(out_file, "a") as f:
