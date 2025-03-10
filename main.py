@@ -51,7 +51,7 @@ def parse_args() -> argparse.Namespace:
         "--duration", default=1/120, type=float, help="Number of hours to run sensor",
     )
     parser.add_argument(
-        "--until-tomorrow", action="store_true", help="Run sensor for rest of day",
+        "--until", default=None, type=str, help="Run sensor until specified time",
     )
     return parser.parse_args()
 
@@ -63,13 +63,8 @@ def main() -> None:
 
     # Script duration
     end_time: datetime.datetime
-    if args.until_tomorrow:
-        tomorrow = datetime.date.today() + datetime.timedelta(days=1)
-        end_time = datetime.datetime(
-            year=tomorrow.year,
-            month=tomorrow.month,
-            day=tomorrow.day,
-        )
+    if args.until is not None:
+        end_time = datetime.datetime.fromisoformat(args.until)
     else:
         start_time = datetime.datetime.now()
         end_time = start_time + datetime.timedelta(hours=args.duration)
