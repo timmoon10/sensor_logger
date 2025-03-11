@@ -1,1 +1,2 @@
-adafruit_sht4x
+adafruit-circuitpython-sht4x
+seaborn
