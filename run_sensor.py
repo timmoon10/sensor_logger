@@ -8,6 +8,8 @@ import time
 import adafruit_sht4x
 import board
 
+from utils import date_to_datetime, tomorrow
+
 @functools.cache
 def sensor() -> adafruit_sht4x.SHT4x:
     """SHT45 temperature and humidity sensor"""
@@ -45,13 +47,13 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("out_file", nargs="?", type=str, default=None)
     parser.add_argument(
-        "--frequency", default=720, type=int, help="Sensor measurements per hour",
-    )
-    parser.add_argument(
-        "--duration", default=1/120, type=float, help="Number of hours to run sensor",
+        "--frequency", default=12, type=int, help="Sensor measurements per hour",
     )
     parser.add_argument(
         "--until", default=None, type=str, help="Run sensor until specified time",
+    )
+    parser.add_argument(
+        "--duration", default=None, type=float, help="Number of hours to run sensor",
     )
     return parser.parse_args()
 
@@ -65,9 +67,14 @@ def main() -> None:
     end_time: datetime.datetime
     if args.until is not None:
         end_time = datetime.datetime.fromisoformat(args.until)
-    else:
+    elif args.duration is not None:
         start_time = datetime.datetime.now()
         end_time = start_time + datetime.timedelta(hours=args.duration)
+    else:
+        start_time = datetime.datetime.now()
+        end_time = date_to_datetime(datetime.date.today(), hour=12)
+        if end_time <= start_time:
+            end_time = date_to_datetime(tomorrow(), hour=12)
 
     # Output file path
     out_file = args.out_file
