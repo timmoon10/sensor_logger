@@ -5,6 +5,8 @@ import pathlib
 
 import seaborn as sns
 
+from utils import root_path
+
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments"""
     parser = argparse.ArgumentParser()
@@ -23,7 +25,7 @@ def main() -> None:
     # Output directory
     out_dir = args.out_dir
     if out_dir is None:
-        out_dir = pathlib.Path(__file__).resolve().parent
+        out_dir = root_path()
     out_dir = pathlib.Path(out_dir).resolve()
 
     # Time range
@@ -49,7 +51,8 @@ def main() -> None:
     # Find date files in time range
     data_dir = args.data
     if data_dir is None:
-        data_dir = pathlib.Path(__file__).resolve().parent / "logs"
+        data_dir = root_path() / "logs"
+    data_dir = pathlib.Path(data_dir).resolve()
     data_files = []
     for data_file in data_dir.glob("*.csv"):
         name = data_file.stem

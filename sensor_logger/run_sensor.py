@@ -8,7 +8,7 @@ import time
 import adafruit_sht4x
 import board
 
-from utils import date_to_datetime, tomorrow
+from utils import date_to_datetime, root_path, tomorrow
 
 @functools.cache
 def sensor() -> adafruit_sht4x.SHT4x:
@@ -80,7 +80,7 @@ def main() -> None:
     out_file = args.out_file
     if out_file is None:
         timestamp = datetime.date.today().isoformat()
-        log_dir = pathlib.Path(__file__).resolve().parent / "logs"
+        log_dir = root_path() / "logs"
         out_file = log_dir / f"{timestamp}.csv"
     out_file = pathlib.Path(out_file).resolve()
 

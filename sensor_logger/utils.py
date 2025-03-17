@@ -1,4 +1,11 @@
 import datetime
+import functools
+import pathlib
+
+@functools.cache
+def root_path() -> pathlib.Path:
+    """Project root directory"""
+    return pathlib.Path(__file__).resolve().parent.parent
 
 def yesterday() -> datetime.date:
     return datetime.date.today() - datetime.timedelta(days=1)

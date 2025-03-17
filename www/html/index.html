@@ -1,11 +1,30 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>My webpage</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor logger</title>
+    <script>
+      function updatePlots() {
+          fetch('/update_plots', { method: 'POST' })
+              .then(response => response.json())
+              .then(data => {
+                  if (data.status === "success") {
+                      document.getElementById("temperature-img").src = data.plot_dir + "temperature.png" + "?" + new Date().getTime();
+                      document.getElementById("humidity-img").src = data.plot_dir + "humidity.png" + "?" + new Date().getTime();
+                  } else {
+                      alert("Error: " + data.message);
+                  }
+              })
+              .catch(error => console.error("Error:", error));
+      }
+    </script>
   </head>
   <body>
-    <marquee> Welcome to my amazing website! </marquee>
-
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+    <h1>Sensor logger</h1>
+    <button onclick="updatePlots()">Update plots</button>
+    <br><br>
+    <img id="temperature-img" src="" alt="Temperature" style="max-width: 100%;">
+    <img id="humidity-img" src="" alt="Humidity" style="max-width: 100%;">
   </body>
 </html>

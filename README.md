@@ -14,7 +14,7 @@ can access `/dev/i2c-1` and `/dev/i2c-2`.
 
 ```
 pip3 install -r requirements.txt
-python3 run_sensor.py
+python3 sensor_logger/run_sensor.py
 ```
 
 By default the script will collect sensor data at 5 minute intervals
@@ -25,7 +25,7 @@ until 12pm. Timestamped data will be saved in `logs`.
 We can create a systemd service to automatically launch the data
 script on boot and daily at 12pm.
 
-Create a service file at `etc/systemd/system/sensor_logger.service`:
+Create a service file at `/etc/systemd/system/sensor_logger.service`:
 ```
 [Unit]
 Description=Sensor logger
@@ -34,7 +34,7 @@ After=network.target
 [Service]
 User=my-username
 WorkingDirectory=/path/to/sensor_logger/logs
-ExecStart=/path/to/python3 /path/to/sensor_logger/run_sensor.py
+ExecStart=/path/to/python3 /path/to/sensor_logger/sensor_logger/run_sensor.py
 Restart=always
 RestartSec=300
 StandardOutput=append:/path/to/sensor_logger/logs/systemd.log
@@ -68,6 +68,36 @@ sudo systemctl enable sensor_logger.service
 sudo systemctl enable sensor_logger.timer
 ```
 
+## Setup web application
+
+We can start a Flask application to generate plots of the data on
+demand.
+
+Create a service file at `/etc/systemd/system/sensor_logger_webapp.service`:
+```
+[Unit]
+Description=Sensor logger webapp
+After=network.target
+
+[Service]
+User=my-username
+WorkingDirectory=/path/to/sensor_logger/logs
+ExecStart=/path/to/python3 /path/to/sensor_logger/sensor_logger/webapp.py
+Restart=always
+RestartSec=30
+StandardOutput=append:/path/to/sensor_logger/logs/systemd.log
+StandardError=append:/path/to/sensor_logger/logs/systemd.log
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Start the service:
+```
+sudo systemctl start sensor_logger_webapp.service  # Start service
+sudo systemctl enable sensor_logger_webapp.service  # Start service on boot
+```
+
 ## Setup web server
 
 Install nginx:
@@ -86,6 +116,11 @@ server {
 	location / {
 		root	/path/to/sensor_logger/www/html;
 		index	index.html;
+	}
+	location /update_plots {
+		proxy_pass http://localhost:5000/update_plots;
+		proxy_set_header Host $host;
+		proxy_set_header X-Real-IP $remote_addr;
 	}
 }
 ```
