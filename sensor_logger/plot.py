@@ -1,6 +1,7 @@
 import argparse
 import csv
 import datetime
+import math
 import pathlib
 
 import seaborn as sns
@@ -82,16 +83,28 @@ def main() -> None:
     temperature_data = [row[1] for row in data]
     humidity_data = [row[2] for row in data]
 
-    # Plot results
+    # Plot temperature
     sns.set_theme(style="whitegrid")
     ax = sns.lineplot(x=times, y=temperature_data)
+    fig = ax.get_figure()
+    ax.set_title("Temperature")
     ax.set_xlim(start_time, end_time)
-    ax.get_figure().savefig(out_dir / "temperature.png")
+    ax.set_ylim(
+        math.floor(min(temperature_data) / 20) * 20,
+        math.ceil(max(temperature_data) / 20) * 20,
+    )
+    fig.autofmt_xdate(rotation=45)
+    fig.savefig(out_dir / "temperature.png")
+
+    # Plot humidity
     ax.cla()
     ax = sns.lineplot(x=times, y=humidity_data)
+    fig = ax.get_figure()
+    ax.set_title("Humidity")
     ax.set_xlim(start_time, end_time)
     ax.set_ylim(0, 100)
-    ax.get_figure().savefig(out_dir / "humidity.png")
+    fig.autofmt_xdate(rotation=45)
+    fig.savefig(out_dir / "humidity.png")
 
 if __name__ == "__main__":
     main()
