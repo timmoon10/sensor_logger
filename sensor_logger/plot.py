@@ -49,7 +49,7 @@ def main() -> None:
     start_date = start_time.date()
     end_date = end_time.date()
 
-    # Find date files in time range
+    # Find data files in time range
     data_dir = args.data
     if data_dir is None:
         data_dir = root_path() / "logs"
