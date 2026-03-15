@@ -1,8 +1,6 @@
 import argparse
-import collections
 import csv
 import datetime
-import math
 import pathlib
 
 import matplotlib.pyplot as plt

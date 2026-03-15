@@ -23,7 +23,7 @@ until 12pm. Timestamped data will be saved in `logs`.
 ### Automatically collect data
 
 We can create a systemd service to automatically launch the data
-script on boot and daily at 12pm.
+script on boot and daily at 12:05pm.
 
 Create a service file at `/etc/systemd/system/sensor_logger.service`:
 ```
@@ -47,10 +47,10 @@ WantedBy=multi-user.target
 Create a timer file at `etc/systemd/system/sensor_logger.timer`:
 ```
 [Unit]
-Description=Runs sensor_logger.service at 12 PM daily
+Description=Runs sensor_logger.service at 12:05 PM daily
 
 [Timer]
-OnCalendar=*-*-* 12:00:00
+OnCalendar=*-*-* 12:05:00
 Persistent=true
 
 [Install]

@@ -92,8 +92,6 @@ def main() -> None:
     # Perform sensor measurements at regular intervals
     while True:
         now = datetime.datetime.now()
-        if now >= end_time:
-            break
         timestamp = now.replace(microsecond=0).isoformat()
         temperature, humidity = sensor().measurements
         temperature = celsius_to_fahrenheit(temperature)
@@ -101,7 +99,10 @@ def main() -> None:
             csv.writer(f).writerow(
                 (timestamp, f"{temperature:.1f}", f"{humidity:.0f}")
             )
-        wait_until_tick(args.frequency)
+        if now < end_time:
+            wait_until_tick(args.frequency)
+        else:
+            break
 
 if __name__ == "__main__":
     main()
