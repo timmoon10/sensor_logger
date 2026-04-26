@@ -23,7 +23,7 @@ def parse_args() -> argparse.Namespace:
         "--percentiles",
         nargs="+",
         type=float,
-        default=[50],
+        default=[75, 50, 25],
         help="List of percentiles to compute",
     )
     return parser.parse_args()
@@ -94,7 +94,7 @@ def main() -> None:
     plt.xlabel("Time")
     plt.ylabel("Temperature (F)")
     plt.xlim(0, 60*24)
-    plt.ylim(60, 80)
+    plt.ylim(60, 90)
     plt.xticks(
         [60 * hour for hour in (0, 3, 6, 9, 12, 15, 18, 21, 24)],
         ["12pm", "3pm", "6pm", "9pm", "12am", "3am", "6am", "9am", "12pm"],
@@ -118,7 +118,7 @@ def main() -> None:
     plt.xlabel("Time")
     plt.ylabel("Humidity (%)")
     plt.xlim(0, 60*24)
-    plt.ylim(40, 80)
+    plt.ylim(30, 80)
     plt.xticks(
         [60 * hour for hour in (0, 3, 6, 9, 12, 15, 18, 21, 24)],
         ["12pm", "3pm", "6pm", "9pm", "12am", "3am", "6am", "9am", "12pm"],

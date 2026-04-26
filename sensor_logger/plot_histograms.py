@@ -83,8 +83,8 @@ def main() -> None:
                 humidity_data[minute][humidity_bin] += 1
 
     # Convert temperature data to DataFrame
-    min_temp = 65
-    max_temp = 80
+    min_temp = 60
+    max_temp = 90
     min_bin = round(min_temp / args.temperature_bin)
     max_bin = round(max_temp / args.temperature_bin)
     bins = pd.Index(range(min_bin, max_bin + 1), name="temperature")
@@ -124,7 +124,7 @@ def main() -> None:
     plt.close()
 
     # Convert humidity data to DataFrame
-    min_humidity = 50
+    min_humidity = 30
     max_humidity = 80
     min_bin = round(min_humidity / args.humidity_bin)
     max_bin = round(max_humidity / args.humidity_bin)
@@ -157,8 +157,8 @@ def main() -> None:
         ["12pm", "3pm", "6pm", "9pm", "12am", "3am", "6am", "9am", "12pm"],
     )
     ax.set_yticks(
-        np.linspace(0, humidity_df.shape[0], 7),
-        np.linspace(min_humidity, max_humidity, 7),
+        np.linspace(0, humidity_df.shape[0], 6),
+        np.linspace(min_humidity, max_humidity, 6),
     )
     fig.autofmt_xdate(rotation=45)
     plt.savefig(out_dir / "humidity_histogram.png")
